@@ -34,23 +34,11 @@ ggplot(adef3, aes(x=month,y=CHG,group=SUBJID,colour=SUBJID))+
 ### Non-linear Fitting by a kinetics model
 ###############################################
 
-# 時間
-# t<-seq(0,36,.5)
-
-
 ## モデル式 
 MDLFUNK <- function(k, k1, xx) 70*(1-exp(-k*xx))-70/(k-k1)*(exp(-k1*xx)-exp(-k*xx))
 
-## residual function 
-# residFun <- function(k, k1, observed, xx) observed - MDLFUNK(k,k1,xx)
-
-
-## values over which to simulate data 
-# x <- adef3$month
-# y <- adef3$CHG
-# t<-sort(unique(x))
+## 時間
 t<-sort(unique(adef3$month))
-
 
 ## パラメータ初期値  
 kstart<-.1
@@ -84,40 +72,6 @@ ADAS.nlme <- nlme(
   start=coef(as.list(nls.out)))
 
 summary(ADAS.nlme)
-
-
-## フィッティングカーブの信頼区間を描画
-xvals <-  with(adef3.grp,seq(min(month),max(month),length.out=100))
-nresamp <- 1000
-## pick new parameter values by sampling from multivariate normal distribution based on fit
-pars.picked <- mvrnorm(nresamp, mu = fixef(ADAS.nlme), Sigma = vcov(ADAS.nlme))
-
-## predicted values: useful below
-pframe <- with(adef3,data.frame(month=xvals))
-pframe$CHG <- predict(ADAS.nlme,newdata=pframe,level=0)
-
-## utility function
-get_CI <- function(y,pref="") {
-  r1 <- t(apply(y,1,quantile,c(0.025,0.975)))
-  setNames(as.data.frame(r1),paste0(pref,c("lwr","upr")))
-}
-
-set.seed(101)
-
-yvals <- apply(pars.picked,1,
-               function(x) { MDLFUNK(x[1], x[2], xvals) }
-)
-
-c1 <- get_CI(yvals)
-
-pframe <- data.frame(pframe,c1)
-
-ggplot(adef3,aes(month,CHG))+
-  geom_point()+
-  geom_line(data=pframe,col="red")+
-  geom_ribbon(data=pframe,aes(ymin=lwr,ymax=upr),colour=NA,alpha=0.3,
-              fill="blue")
-
 
 
 ## 観測値 vs 予測値のプロット
