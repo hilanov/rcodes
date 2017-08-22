@@ -13,7 +13,8 @@ library(lattice)
 
 
 # データの読み込み
-adef<-read.csv(file="C:/Users/T.Hirano/Documents/【PJ】/Eisai_ADAS/ADEF.csv")
+adef<-read.csv(file="C:/Users/T.Hirano/Documents/【PJ】/Eisai_ADAS/ADEF_SMALL.csv")
+
 
 # 同時点で記録のあるオブザベーションを削除
 adef2 <- dplyr::distinct(adef, SUBJID, month, .keep_all=T)
@@ -35,14 +36,25 @@ ggplot(adef3, aes(x=month,y=CHG,group=SUBJID,colour=SUBJID))+
 ###############################################
 
 ## モデル式 
+
+# パラメータは正規分布
 MDLFUNK <- function(k, k1, xx) 70*(1-exp(-k*xx))-70/(k-k1)*(exp(-k1*xx)-exp(-k*xx))
+
+# パラメータは対数正規分布
+# MDLFUNK <- function(k, k1, xx) 70*(1-exp(-exp(k)*xx))-70/(exp(k)-exp(k1))*(exp(-exp(k1)*xx)-exp(-exp(k)*xx))
 
 ## 時間
 t<-sort(unique(adef3$month))
 
 ## パラメータ初期値  
+
+# パラメータは正規分布
 kstart<-.1
 k1start<-5
+
+# パラメータは対数正規分布
+# kstart<-log(.003)
+# k1start<-log(24.4)
 
 ## SUBJIDの上5桁で群を作成
 adef3$GRP<-as.numeric(substr(adef3$SUBJID,1,5))
@@ -60,8 +72,16 @@ plot(adef3.mean,type="b",col="blue")
 abline(h=0,v=0)
 
 ## nlsによるフィッティング（平均値）
-(nls.out <- nls(CHG~MDLFUNK(k, k1, month), data=adef3.mean, start=list(k=.1, k1=5)))
+(nls.out <- nls(CHG~MDLFUNK(k, k1, month), data=adef3.mean, start=list(k=kstart, k1=k1start)))
 
+summary(nls.out)
+predict.c <- predict(nls.out)
+plot(adef3.mean, ann=F,xlim=c(min(adef3.mean$month),max(adef3.mean$month)),
+                        ylim=c(min(adef3.mean$CHG),max(adef3.mean$CHG)));   par(new=T)
+plot(adef3.mean$month, predict.c, type="l", xlim=c(min(adef3.mean$month),max(adef3.mean$month)),
+                                          ylim=c(min(adef3.mean$CHG),max(adef3.mean$CHG)),
+     col="blue")
+abline(h=0,v=0)
 
 ## NLME
 ADAS.nlme <- nlme(
