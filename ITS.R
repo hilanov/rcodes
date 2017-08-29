@@ -1,6 +1,7 @@
 setwd("C:/Users/T.Hirano/Documents/R/Git/rcodes")
+setwd("C:/Users/hirano/Documents/R/git/rcodes")
 # a<-read.csv("clipboard")
-# write.csv(a,"a.csv")
+# write.csv(a,"a.csv",quote=F,row.names=F)
 a<-read.csv("a.csv")
 head(a)
 
