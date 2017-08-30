@@ -76,8 +76,7 @@ abline(h=0,v=0)
 ## nlsによるフィッティング（平均値）
 # (nls.out <- nls(CHG~MDLFUNK(k, k1, month), data=adef3.mean, start=list(k=kstart, k1=k1start)))
 (nls.out <- nls(CHG~MDLFUNK(k1, k2, A, month), 
-                data=adef3.mean, start=list(k1=k1start, k2=k2start, A=Astart),
-                control=list(minFactor=.0001,maxiter=500)))
+                data=adef3.mean, start=list(k1=k1start, k2=k2start, A=Astart)))
 
 summary(nls.out)
 predict.c <- predict(nls.out)
@@ -94,7 +93,7 @@ ADAS.nlme <- nlme(
   data=adef3.grp,
   fixed = k1 + k2 + A ~ 1,
   random = k1 + k2 + A ~ 1,
-  start=coef(as.list(nls.out)))
+  start=coef(as.list(nls.out)), verbose=T)
 
 
 # Error in nlme.formula(CHG ~ MDLFUNK(k1, k2, A, month), data = adef3.grp,  : 
