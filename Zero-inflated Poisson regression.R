@@ -86,3 +86,43 @@ ggplot(newdata1, aes(x = child, y = phat, colour = factor(persons))) +
   facet_wrap(~camper) +
   labs(x = "Number of Children", y = "Predicted Fish Caught")
 
+
+#
+# Example from http://kusanagi.hatenablog.jp/entry/2017/02/23/194835
+#
+
+#使うパッケージ
+library(fitdistrplus)
+library(gamlss)
+
+#ある実測のデータ
+d<-c(0,5,6,0,1,8,0,2,0,1,4,2,0,3,8,9,1,1,0,10,1,2,0,2,11,3,0,8,5,11,3,8,8,8,14,7,8,6,5,1,8,7,2,0,6,8,3,3,0,6,2,11,2,0,0,0,0,0,0)
+
+#可視化
+hist(d)
+
+#0の割合
+length(d[d==0])/length(d)
+
+#まずはポアソンを普通にデータにフィット
+fit.pois<-fitdist(d,"pois")
+summary(fit.pois)
+
+#次にゼロ過剰ポアソン分布をデータにフィット
+fit.ZIP<-fitdist(d,"ZIP",start=1)
+summary(fit.ZIP)
+
+#２つのモデルを比較してみる
+gofstat(list(fit.pois,fit.ZIP),fitnames=c("Poisson","ZIP"))
+
+#これではσを出してくれない。gamlssを使う
+fit.ZIP2<-gamlss(d~1,family=ZIP)
+fit.ZIP2
+
+plot(fit.pois)
+plot(fit.ZIP)
+plot(fit.ZIP2)
+
+
+
+
