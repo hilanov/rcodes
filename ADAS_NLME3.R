@@ -105,14 +105,25 @@ plot(ADAS.nlme,CHG~fitted(.),abline=c(0,1))
 
 ## 個別データに対するフィッティングのプロット
 ADAS.pred<-augPred(ADAS.nlme,level=0:1)
-ADAS.pred$GRP<-as.numeric(substr(ADAS.pred$.groups,1,5))
+# ADAS.pred$GRP<-as.numeric(substr(ADAS.pred$.groups,1,5))
+
+
+ADAS.pred.id<-data.frame(.groups=unique(ADAS.pred$.groups))
+ADAS.pred.id$NUM<-1:nrow(ADAS.pred.id)
+ADAS.pred.id$GRP<-ceiling(ADAS.pred.id$NUM/8)
+
+ADAS.pred.id2<-ADAS.pred$.groups
+
+
+
+ADAS.pred<-inner_join(ADAS.pred , ADAS.pred.id ,by=".groups")
 
 NMBR<-unique(ADAS.pred$GRP)
 
 #なぜかプロットされない
 for(i in 1:length(NMBR)){
-  print(NMBR[i])
-  plot(ADAS.pred[ADAS.pred$GRP==NMBR[i],])
+# print(NMBR[i])
+ plot(ADAS.pred[ADAS.pred$GRP==NMBR[i],])
 }
 
 #やむなく書き下し
@@ -191,6 +202,9 @@ plot(ADAS.pred[ADAS.pred$GRP==NMBR[72],])
 plot(ADAS.pred[ADAS.pred$GRP==NMBR[73],])
 plot(ADAS.pred[ADAS.pred$GRP==NMBR[74],])
 plot(ADAS.pred[ADAS.pred$GRP==NMBR[75],])
+
+
+
 plot(ADAS.pred[ADAS.pred$GRP==NMBR[76],])
 plot(ADAS.pred[ADAS.pred$GRP==NMBR[77],])
 plot(ADAS.pred[ADAS.pred$GRP==NMBR[78],])
@@ -232,17 +246,5 @@ plot(ADAS.pred[ADAS.pred$GRP==NMBR[113],])
 plot(ADAS.pred[ADAS.pred$GRP==NMBR[114],])
 plot(ADAS.pred[ADAS.pred$GRP==NMBR[115],])
 plot(ADAS.pred[ADAS.pred$GRP==NMBR[116],])
-plot(ADAS.pred[ADAS.pred$GRP==NMBR[117],])
-plot(ADAS.pred[ADAS.pred$GRP==NMBR[118],])
-plot(ADAS.pred[ADAS.pred$GRP==NMBR[119],])
-plot(ADAS.pred[ADAS.pred$GRP==NMBR[120],])
-plot(ADAS.pred[ADAS.pred$GRP==NMBR[121],])
-plot(ADAS.pred[ADAS.pred$GRP==NMBR[122],])
-plot(ADAS.pred[ADAS.pred$GRP==NMBR[123],])
-plot(ADAS.pred[ADAS.pred$GRP==NMBR[124],])
-plot(ADAS.pred[ADAS.pred$GRP==NMBR[125],])
-plot(ADAS.pred[ADAS.pred$GRP==NMBR[126],])
-plot(ADAS.pred[ADAS.pred$GRP==NMBR[127],])
-plot(ADAS.pred[ADAS.pred$GRP==NMBR[128],])
-plot(ADAS.pred[ADAS.pred$GRP==NMBR[129],])
+
 

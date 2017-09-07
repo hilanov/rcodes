@@ -1,5 +1,13 @@
-setwd("C:/Users/T.Hirano/Documents/【PJ】/Eisai_ADAS")
+---
+output: html_document
+---
 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
 # packageの読み込み
 
 library(nlme)
@@ -29,8 +37,14 @@ adef3<-subset(adef3,select=c("SUBJID","month","CHG"))
 ggplot(adef3, aes(x=month,y=CHG,group=SUBJID,colour=SUBJID))+
   geom_line()+guides(colour=F)+geom_hline(yintercept=0)+
   scale_y_continuous(limits = c(-30, 35))
+```
 
 
+モデル式
+
+MDLFUNK <- function(a,k, k1, xx) a*exp(-k*xx)-(a+70)*exp(-k1*xx)+70
+
+```{r}
 ###############################################
 ### Non-linear Fitting by a kinetics model
 ###############################################
@@ -38,7 +52,7 @@ ggplot(adef3, aes(x=month,y=CHG,group=SUBJID,colour=SUBJID))+
 ## モデル式 
 
 # パラメータは正規分布
-MDLFUNK <- function(k1, k2, A, xx) 70*(1-exp(-k1*xx))-A*(exp(-k1*xx)-exp(-k2*xx))-1/(k1-k2)*xx*exp(-k2*xx)
+MDLFUNK <- function(a,k, k1, xx) a*exp(-k*xx)-(a+70)*exp(-k1*xx)+70
 
 
 # パラメータは対数正規分布
@@ -50,9 +64,9 @@ t<-sort(unique(adef3$month))
 ## パラメータ初期値  
 
 # パラメータは正規分布
-k1start<-.1
-k2start<-.2
-Astart<-10
+kstart<-.02
+k1start<-.004
+astart<-20
 
 # パラメータは対数正規分布
 # kstart<-log(.003)
@@ -74,8 +88,10 @@ plot(adef3.mean,type="b",col="blue")
 abline(h=0,v=0)
 
 ## nlsによるフィッティング（平均値）
-(nls.out <- nls(CHG~MDLFUNK(k1, k2, A, month), 
-                data=adef3.mean, start=list(k1=k1start, k2=k2start, A=Astart)))
+# (nls.out <- nls(CHG~MDLFUNK(k, k1, month), data=adef3.mean, start=list(k=kstart, k1=k1start)))
+(nls.out <- nls(CHG~MDLFUNK(a, k, k1, month), 
+                data=adef3.mean, start=list(a=astart, k=kstart, k1=k1start),
+                control=list(minFactor=.0001,maxiter=500)))
 
 summary(nls.out)
 predict.c <- predict(nls.out)
@@ -88,32 +104,28 @@ abline(h=0,v=0)
 
 ## NLME
 ADAS.nlme <- nlme(
-  CHG ~ MDLFUNK(k1, k2, A, month),
+  CHG ~ MDLFUNK(a, k, k1, month),
   data=adef3.grp,
-  fixed = k1 + k2 + A ~ 1,
-  random = k1 + k2 + A ~ 1,
-  start=coef(as.list(nls.out)),
-  control=list(maxIter=1000,tolerance=.05,minScale=.0001),verbose = T)
-
+  fixed = a + k + k1 ~ 1,
+  random = a + k + k1 ~ 1,
+  start=coef(as.list(nls.out)), control=list(minScale=.0001),verbose=T)
 
 summary(ADAS.nlme)
+```
 
-
+観測値 vs 予測値のプロット
+```{r}
 ## 観測値 vs 予測値のプロット
 plot(ADAS.nlme,CHG~fitted(.),abline=c(0,1))
+```
 
-
+個別データに対するフィッティングのプロット
+```{r}
 ## 個別データに対するフィッティングのプロット
 ADAS.pred<-augPred(ADAS.nlme,level=0:1)
 ADAS.pred$GRP<-as.numeric(substr(ADAS.pred$.groups,1,5))
 
 NMBR<-unique(ADAS.pred$GRP)
-
-# なぜかプロットされない
-# for(i in 1:length(NMBR)){
-#  print(NMBR[i])
-#   plot(ADAS.pred[ADAS.pred$GRP==NMBR[i],])
-# }
 
 #やむなく書き下し
 plot(ADAS.pred[ADAS.pred$GRP==NMBR[1],])
@@ -233,3 +245,4 @@ plot(ADAS.pred[ADAS.pred$GRP==NMBR[114],])
 plot(ADAS.pred[ADAS.pred$GRP==NMBR[115],])
 plot(ADAS.pred[ADAS.pred$GRP==NMBR[116],])
 
+```
