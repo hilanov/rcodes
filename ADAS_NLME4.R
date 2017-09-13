@@ -93,7 +93,7 @@ ADAS.nlme <- nlme(
   fixed = k1 + k2 + A ~ 1,
   random = k1 + k2 + A ~ 1,
   start=coef(as.list(nls.out)),
-  control=list(maxIter=1000,tolerance=.05,minScale=.0001),verbose = T)
+  control=list(maxIter=1000,tolerance=.1,minScale=.0001),verbose = T)
 
 
 summary(ADAS.nlme)
